@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="menu_title">15sp</dimen>
+    <dimen name="menu_title_padding">5dp</dimen>
+    <dimen name="menu_activities_list_padding_left">24dp</dimen>
+    <dimen name="menu_activities_list_padding_top_down">14dp</dimen>
+    <dimen name="menu_entries_text">20sp</dimen>
+    <dimen name="menu_entries_title">16sp</dimen>
+    <dimen name="menu_entries_sides_padding">10dp</dimen>
+    <dimen name="menu_entries_top_down_padding">15dp</dimen>
+    <dimen name="menu_entries_top_down_radio_padding">7dp</dimen>
+
+    <dimen name="nav_header_vertical_spacing">16dp</dimen>
+    <dimen name="nav_header_height">150dp</dimen>
+
+    <dimen name="activity_margin_6">6dp</dimen>
+    <dimen name="activity_margin_16">16dp</dimen>
+    <dimen name="activity_margin_24">24dp</dimen>
+    <dimen name="activity_margin_32">32dp</dimen>
+    <dimen name="activity_margin_45">45dp</dimen>
+    <dimen name="activity_margin_55">55dp</dimen>
+    <dimen name="activity_margin_64">64dp</dimen>
+
+    <dimen name="text_size_9">9dp</dimen>
+    <dimen name="text_size_20">20dp</dimen>
+    <dimen name="text_size_30">30dp</dimen>
+    <dimen name="text_size_40">40dp</dimen>
+    <dimen name="text_size_60">60dp</dimen>
+    <dimen name="text_size_85">85dp</dimen>
+</resources>

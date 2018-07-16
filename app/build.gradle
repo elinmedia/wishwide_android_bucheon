@@ -1,0 +1,58 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.3"
+
+    defaultConfig {
+        //applicationId "com.media.mobile.elin.wishwidemobile"
+        minSdkVersion 19
+        targetSdkVersion 22
+        vectorDrawables.useSupportLibrary = true
+        ndk {
+            abiFilters 'armeabi-v7a', 'x86'
+        }
+        //versionCode 600
+        //versionName "6.0"
+        //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        //multiDexEnabled true
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    archivesBaseName = rootProject.projectDir.getName()
+
+    buildTypes {
+
+        debug {
+            minifyEnabled false
+            useProguard false
+        }
+        release {
+            minifyEnabled false
+            useProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile(name: 'VuforiaWrapper', ext:'aar')
+
+    androidTestCompile('com.android.support.test.espresso:espresso-core:3.0.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+
+    //권한 허용
+    //    compile 'gun0912.ted:tedpermission:2.1.0'
+    compile 'com.android.support:appcompat-v7:25.0.1'
+    compile 'com.android.support:design:25.0.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'org.apache.httpcomponents:httpcore:4.4.6'
+    compile 'com.tsengvn:typekit:1.0.1'
+    testCompile 'junit:junit:4.12'
+}

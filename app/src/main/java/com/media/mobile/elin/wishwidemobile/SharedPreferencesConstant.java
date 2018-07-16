@@ -1,0 +1,17 @@
+package com.media.mobile.elin.wishwidemobile;
+
+public interface SharedPreferencesConstant {
+    String PREFERENCES_NAME = "ElinmediaWishwideMobile";
+
+
+    String WHETHER_PERMISSION_GUIDE_SHOW_KEY = "WHETHER_PERMISSION_GUIDE_SHOW";
+
+
+    String WIDE_CUSTOMER_NO_KEY = "WIDE_CUSTOMER_NO";
+    String WIDE_CUSTOMER_PHONE_KEY = "WIDE_CUSTOMER_PHONE";
+    String WIDE_CUSTOMER_EMAIL_KEY = "WIDE_CUSTOMER_EMAIL";
+    String WIDE_CUSTOMER_NAME_KEY = "WIDE_CUSTOMER_NAME";
+    String WIDE_CUSTOMER_BIRTH_KEY = "WIDE_CUSTOMER_BIRTH";
+    String WIDE_CUSTOMER_SEX_KEY = "WIDE_CUSTOMER_SEX";
+
+}

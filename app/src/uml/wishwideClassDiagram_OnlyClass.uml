@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement />
+  <nodes>
+    <node x="555.0" y="795.0">com.media.mobile.elin.wishwidemobile.Model.GameBenefitVO</node>
+    <node x="0.0" y="795.0">com.media.mobile.elin.wishwidemobile.Model.WideCustomerVO</node>
+    <node x="246.0" y="486.0">com.media.mobile.elin.wishwidemobile.FileFetcher.DataSetFileDownloadTask</node>
+    <node x="629.0" y="329.0">com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video.InitTrackerTask</node>
+    <node x="376.0" y="795.0">com.media.mobile.elin.wishwidemobile.Model.GameSettingVO</node>
+    <node x="467.0" y="719.0">com.media.mobile.elin.wishwidemobile.Renderer.VideoPlaybackShaders</node>
+    <node x="0.0" y="871.0">com.media.mobile.elin.wishwidemobile.Model.MarkerVO</node>
+    <node x="321.0" y="172.0">com.media.mobile.elin.wishwidemobile.Activity.MainActivity.NearbyBeaconListTask</node>
+    <node x="541.0" y="562.0">com.media.mobile.elin.wishwidemobile.Session.SampleApplicationException</node>
+    <node x="170.0" y="172.0">com.media.mobile.elin.wishwidemobile.Activity.MainActivity.BeaconFileRead</node>
+    <node x="0.0" y="719.0">com.media.mobile.elin.wishwidemobile.Renderer.SampleAppRenderer_Video</node>
+    <node x="809.4583333333333" y="91.0">com.media.mobile.elin.wishwidemobile.Activity.SettingActivity</node>
+    <node x="658.4583333333333" y="91.0">com.media.mobile.elin.wishwidemobile.Activity.LoadingActivity</node>
+    <node x="677.0" y="486.0">com.media.mobile.elin.wishwidemobile.Renderer.VideoPlaybackRenderer</node>
+    <node x="155.0" y="329.0">com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video.InitVuforiaTask</node>
+    <node x="507.0" y="172.0">com.media.mobile.elin.wishwidemobile.Activity.MainActivity.GameSettingTask</node>
+    <node x="257.0" y="248.0">com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video</node>
+    <node x="273.47727272727275" y="91.0">com.media.mobile.elin.wishwidemobile.Activity.MainActivity</node>
+    <node x="238.0" y="719.0">com.media.mobile.elin.wishwidemobile.Model.MembershipCustomerVO</node>
+    <node x="313.3333333333333" y="0.0">com.media.mobile.elin.wishwidemobile.WebUrlConstance</node>
+    <node x="680.0" y="719.0">com.media.mobile.elin.wishwidemobile.Model.GameCharacterFileVO</node>
+    <node x="146.0" y="643.0">com.media.mobile.elin.wishwidemobile.Activity.VideoPlayback2</node>
+    <node x="733.0" y="795.0">com.media.mobile.elin.wishwidemobile.Activity.BaseApplication</node>
+    <node x="539.9583333333333" y="0.0">com.media.mobile.elin.wishwidemobile.SharedPreferencesConstant</node>
+    <node x="25.25" y="562.0">com.media.mobile.elin.wishwidemobile.Control.SampleApplicationControl_Video</node>
+    <node x="0.0" y="486.0">com.media.mobile.elin.wishwidemobile.FileFetcher.GameCharacterFileDownloadTask</node>
+    <node x="324.0" y="643.0">com.media.mobile.elin.wishwidemobile.FileDownloader.FileDownloaderListener</node>
+    <node x="461.4583333333333" y="91.0">com.media.mobile.elin.wishwidemobile.Activity.PermissionGuideActivity</node>
+    <node x="566.75" y="405.0">com.media.mobile.elin.wishwidemobile.Control.SampleAppRendererControl</node>
+    <node x="139.33333333333331" y="0.0">com.media.mobile.elin.wishwidemobile.PermissionConstant</node>
+    <node x="0.0" y="643.0">com.media.mobile.elin.wishwidemobile.Activity.VideoPlayback</node>
+    <node x="477.0" y="486.0">com.media.mobile.elin.wishwidemobile.Renderer.VideoPlaybackRenderer2</node>
+    <node x="344.5" y="562.0">com.media.mobile.elin.wishwidemobile.FileDownloader</node>
+    <node x="173.5" y="405.0">com.media.mobile.elin.wishwidemobile.FileFetcher</node>
+    <node x="302.0" y="329.0">com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video.StartVuforiaTask</node>
+    <node x="457.0" y="329.0">com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video.ResumeVuforiaTask</node>
+    <node x="189.0" y="795.0">com.media.mobile.elin.wishwidemobile.Renderer.KeyFrameShaders</node>
+    <node x="0.0" y="172.0">com.media.mobile.elin.wishwidemobile.Activity.MainActivity.WebAndAppBridge</node>
+    <node x="0.0" y="329.0">com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video.LoadTrackerTask</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video.InitVuforiaTask" target="com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video">
+      <point x="0.0" y="-15.5" />
+      <point x="218.5" y="309.0" />
+      <point x="324.5" y="309.0" />
+      <point x="-45.0" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video.LoadTrackerTask" target="com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video">
+      <point x="0.0" y="-15.5" />
+      <point x="67.5" y="299.0" />
+      <point x="279.5" y="299.0" />
+      <point x="-90.0" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.FileDownloader.FileDownloaderListener" target="com.media.mobile.elin.wishwidemobile.FileDownloader">
+      <point x="0.0" y="-15.5" />
+      <point x="0.0" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video.InitTrackerTask" target="com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video">
+      <point x="0.0" y="-15.5" />
+      <point x="692.0" y="299.0" />
+      <point x="459.5" y="299.0" />
+      <point x="90.0" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.FileFetcher.GameCharacterFileDownloadTask" target="com.media.mobile.elin.wishwidemobile.FileFetcher">
+      <point x="0.0" y="-15.5" />
+      <point x="113.0" y="461.0" />
+      <point x="199.75" y="461.0" />
+      <point x="-26.25" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Activity.MainActivity.WebAndAppBridge" target="com.media.mobile.elin.wishwidemobile.Activity.MainActivity">
+      <point x="0.0" y="-15.5" />
+      <point x="75.0" y="142.0" />
+      <point x="287.85227272727275" y="142.0" />
+      <point x="-43.125" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video.StartVuforiaTask" target="com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video">
+      <point x="0.0" y="-15.5" />
+      <point x="0.0" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video.ResumeVuforiaTask" target="com.media.mobile.elin.wishwidemobile.Session.SampleApplicationSession_Video">
+      <point x="0.0" y="-15.5" />
+      <point x="533.0" y="309.0" />
+      <point x="414.5" y="309.0" />
+      <point x="45.0" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Activity.PermissionGuideActivity" target="com.media.mobile.elin.wishwidemobile.SharedPreferencesConstant">
+      <point x="0.0" y="-15.5" />
+      <point x="549.9583333333333" y="71.0" />
+      <point x="612.7083333333333" y="71.0" />
+      <point x="-24.25" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Activity.MainActivity.BeaconFileRead" target="com.media.mobile.elin.wishwidemobile.Activity.MainActivity">
+      <point x="0.0" y="-15.5" />
+      <point x="235.5" y="152.0" />
+      <point x="316.60227272727275" y="152.0" />
+      <point x="-14.375" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Activity.VideoPlayback2" target="com.media.mobile.elin.wishwidemobile.Control.SampleApplicationControl_Video">
+      <point x="0.0" y="-15.5" />
+      <point x="212.5" y="618.0" />
+      <point x="194.0" y="618.0" />
+      <point x="56.25" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Activity.SettingActivity" target="com.media.mobile.elin.wishwidemobile.SharedPreferencesConstant">
+      <point x="0.0" y="-15.5" />
+      <point x="872.4583333333333" y="61.0" />
+      <point x="709.7083333333333" y="61.0" />
+      <point x="72.75" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Activity.MainActivity.GameSettingTask" target="com.media.mobile.elin.wishwidemobile.Activity.MainActivity">
+      <point x="0.0" y="-15.5" />
+      <point x="577.0" y="142.0" />
+      <point x="374.10227272727275" y="142.0" />
+      <point x="43.125" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Activity.MainActivity" target="com.media.mobile.elin.wishwidemobile.PermissionConstant">
+      <point x="-38.33333333333337" y="-15.5" />
+      <point x="292.6439393939394" y="71.0" />
+      <point x="216.33333333333331" y="71.0" />
+      <point x="0.0" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Renderer.VideoPlaybackRenderer2" target="com.media.mobile.elin.wishwidemobile.Control.SampleAppRendererControl">
+      <point x="0.0" y="-15.5" />
+      <point x="567.0" y="461.0" />
+      <point x="616.0" y="461.0" />
+      <point x="-49.25" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Activity.MainActivity.NearbyBeaconListTask" target="com.media.mobile.elin.wishwidemobile.Activity.MainActivity">
+      <point x="0.0" y="-15.5" />
+      <point x="404.0" y="152.0" />
+      <point x="345.35227272727275" y="152.0" />
+      <point x="14.375" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Renderer.VideoPlaybackRenderer" target="com.media.mobile.elin.wishwidemobile.Control.SampleAppRendererControl">
+      <point x="0.0" y="-15.5" />
+      <point x="763.5" y="461.0" />
+      <point x="714.5" y="461.0" />
+      <point x="49.25" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Activity.MainActivity" target="com.media.mobile.elin.wishwidemobile.WebUrlConstance">
+      <point x="0.0" y="-15.5" />
+      <point x="330.97727272727275" y="51.0" />
+      <point x="384.8333333333333" y="51.0" />
+      <point x="0.0" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Activity.LoadingActivity" target="com.media.mobile.elin.wishwidemobile.SharedPreferencesConstant">
+      <point x="0.0" y="-15.5" />
+      <point x="723.9583333333333" y="71.0" />
+      <point x="661.2083333333333" y="71.0" />
+      <point x="24.25" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Activity.MainActivity" target="com.media.mobile.elin.wishwidemobile.SharedPreferencesConstant">
+      <point x="38.333333333333314" y="-15.5" />
+      <point x="369.310606060606" y="61.0" />
+      <point x="564.2083333333333" y="61.0" />
+      <point x="-72.75" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.Activity.VideoPlayback" target="com.media.mobile.elin.wishwidemobile.Control.SampleApplicationControl_Video">
+      <point x="0.0" y="-15.5" />
+      <point x="63.0" y="618.0" />
+      <point x="81.5" y="618.0" />
+      <point x="-56.25" y="15.5" />
+    </edge>
+    <edge source="com.media.mobile.elin.wishwidemobile.FileFetcher.DataSetFileDownloadTask" target="com.media.mobile.elin.wishwidemobile.FileFetcher">
+      <point x="0.0" y="-15.5" />
+      <point x="339.0" y="461.0" />
+      <point x="252.25" y="461.0" />
+      <point x="26.25" y="15.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.9381107491856677" x="484.5" y="445.1701388888889" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>Project Files</SCOPE>
+  <VISIBILITY>packageLocal</VISIBILITY>
+</Diagram>
+
