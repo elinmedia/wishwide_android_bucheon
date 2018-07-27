@@ -37,6 +37,8 @@ import android.util.Log;
 import android.view.*;
 import android.webkit.*;
 import android.widget.*;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.media.mobile.elin.wishwidemobile.Model.WideCustomerVO;
 import com.media.mobile.elin.wishwidemobile.PermissionConstant;
 import com.media.mobile.elin.wishwidemobile.R;
@@ -83,12 +85,6 @@ public class MainActivity extends AppCompatActivity
     private SwipeRefreshLayout mSwipeRefresh;
     private WebAndAppBridge mWebAndAppBridge;
 
-    //위치서비스 관련 멤버변수
-    private LocationManager mLocationManager;
-    boolean mIsNetworkEnabled;
-    private LocationListener mLocationListener;
-    private boolean isLocationUpdateNextTime = false;
-
     private AppCompatDialog progressDialog;
     private AlertDialog mDialog;
 
@@ -111,30 +107,6 @@ public class MainActivity extends AppCompatActivity
 
         //View 초기화
         initializeView();
-
-
-        //위치 Listener
-        mLocationListener = new LocationListener() {
-            public void onLocationChanged(Location location) {
-                Log.d(TAG, "위치 확인:" + location.getLatitude() + ", " + location.getLongitude());
-
-                //최초 위치 정보를 받아왔을 경우
-                Location lastKnownLocation = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                if (lastKnownLocation == null) {
-                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH + "?lat=" + location.getLatitude() + "&lng=" + location.getLongitude());
-                }
-                progressOFF();
-            }
-
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-            }
-
-            public void onProviderEnabled(String provider) {
-            }
-
-            public void onProviderDisabled(String provider) {
-            }
-        };
 
 
         mWebView.setWebChromeClient(new WebChromeClient() {
@@ -269,14 +241,15 @@ public class MainActivity extends AppCompatActivity
                 mImgTopLogo.setVisibility(View.GONE);
                 mTvTopTilte.setVisibility(View.GONE);
 
-                switch (url) {
-                    case DOMAIN_NAME:   //로그인
-                        mToolbar.setVisibility(View.GONE);
-                        mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);    //menu(navigation) gone setting
-                        mLlTabs.setVisibility(View.GONE);
+
+                //AR 게임 실행 버튼 visible
+                if (url.equals(DOMAIN_NAME)) {
+                    mToolbar.setVisibility(View.GONE);
+                    mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);    //menu(navigation) gone setting
+                    mLlTabs.setVisibility(View.GONE);
 
 //                        setWebViewScrollable(false);
-                        mSwipeRefresh.setEnabled(false);
+                    mSwipeRefresh.setEnabled(false);
 
 //                        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 
@@ -287,36 +260,13 @@ public class MainActivity extends AppCompatActivity
 //
 //                            mWebView.loadUrl("javascript:getDevicePhoneNum(" + localPhoneNum + ")");
 //                        }
-                        mWebView.clearHistory();
-                        break;
-                    case DOMAIN_NAME + JOIN_PATH: //회원가입
-                        mToolbar.setVisibility(View.GONE);
-                        mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);    //menu(navigation) gone
-                        mLlTabs.setVisibility(View.GONE);
-                        break;
-                    case DOMAIN_NAME + GIFT_STORE_LIST_PATH:    //선물가게
-                        mTvTopTilte.setVisibility(View.VISIBLE);
-                        mTvTopTilte.setText("선물가게");
-                        break;
-                    case DOMAIN_NAME + RECEIVED_GIFT_LIST_PATH: //받은 선물함
-                        mImgTopLogo.setVisibility(View.VISIBLE);
-                        break;
-                    case DOMAIN_NAME + SEND_GIFT_LIST_PATH: //보낸 선물함
-                        mImgTopLogo.setVisibility(View.VISIBLE);
-                        break;
-                    case DOMAIN_NAME + COUPON_LIST_PATH:  //쿠폰
-                        mTvTopTilte.setVisibility(View.VISIBLE);
-                        mTvTopTilte.setText("쿠폰");
-                        break;
-                    default:
-                        break;
+                    mWebView.clearHistory();
                 }
-
-                //AR 게임 실행 버튼 visible
                 if (url.contains(DOMAIN_NAME + "gift/")) {   //선물가게
                     mTvTopTilte.setVisibility(View.VISIBLE);
                     mTvTopTilte.setText("선물가게");
-                } else if (url.contains(DOMAIN_NAME + HOME_PATH)) { //홈
+                }
+                else if (url.contains(DOMAIN_NAME + HOME_PATH)) { //홈
                     mImgTopLogo.setVisibility(View.VISIBLE);
 
                     mWebView.clearHistory();
@@ -334,9 +284,24 @@ public class MainActivity extends AppCompatActivity
                         wideCustomerName = "";
                     }
                     Log.d(TAG, "고객명 확인: " + wideCustomerName);
-                } else if (url.contains(DOMAIN_NAME + STAMP_AND_POINT_LIST_DETAIL_PATH)) {    //도장/포인트 내역
+                }
+                else if (url.contains(DOMAIN_NAME + STAMP_AND_POINT_LIST_DETAIL_PATH) || url.contains(DOMAIN_NAME + STAMP_AND_POINT_LIST_HISTORY_PATH)) {
+                    //도장/포인트 내역
                     mTvTopTilte.setVisibility(View.VISIBLE);
                     mTvTopTilte.setText("도장/포인트");
+                }
+                else if (url.contains(DOMAIN_NAME + JOIN_PATH)) {
+                    mToolbar.setVisibility(View.GONE);
+                    mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);    //menu(navigation) gone
+                    mLlTabs.setVisibility(View.GONE);
+                }
+                else if (url.contains(DOMAIN_NAME + COUPON_LIST_PATH) || url.contains(DOMAIN_NAME + COUPON_DETAIL_PATH)) {
+                    mTvTopTilte.setVisibility(View.VISIBLE);
+                    mTvTopTilte.setText("쿠폰");
+                }
+                else if (url.contains(DOMAIN_NAME + RECEIVED_GIFT_LIST_PATH) || url.contains(DOMAIN_NAME + RECEIVED_GIFT_DETIL_PATH)) {
+                    mTvTopTilte.setVisibility(View.VISIBLE);
+                    mTvTopTilte.setText("받은 선물함");
                 }
 
                 progressOFF();
@@ -474,21 +439,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    //웹뷰 스크롤 제어
-    public void setWebViewScrollable(final boolean isScroll) {
-        mWebView.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                if (isScroll) {
-                    return false;
-                } else {
-                    return (event.getAction() == MotionEvent.ACTION_MOVE);
-                }
-            }
-        });
-
-    }
-
-
     //Web의 javascript와 앱을 연결해주는 클래스
     private class WebAndAppBridge {
         private static final String TAG = "WebAndAppBridge";
@@ -578,6 +528,13 @@ public class MainActivity extends AppCompatActivity
 //                    requestLocationUpdate();
                     break;
             }
+        }
+
+        @JavascriptInterface
+        public void callQRCodeScanner(String type) {
+            Log.d(TAG, "enter callQRCodeScanner()...");
+            IntentIntegrator intentIntegrator = new IntentIntegrator(MainActivity.this);
+            intentIntegrator.initiateScan();
         }
 
         private JSONArray getContactAll() {
@@ -779,107 +736,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    //위치 서비스 요청
-    private void requestLocationUpdate() {
-//        progressON(this, "로딩 중...");
-        List<String> deniedPermissions = getDeniedPermissions(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION);
-
-
-        if (deniedPermissions.size() > 0) {
-            //위치 권한 있음
-            progressOFF();
-            requestPermission(deniedPermissions.toArray(new String[deniedPermissions.size()]), ROCATION_FIND_PERMISSION);
-        } else {
-            if (mLocationManager == null) {
-                mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            }
-
-//            mIsGPSEnabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            mIsNetworkEnabled = mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-
-            if (!mIsNetworkEnabled) {
-                progressOFF();
-
-
-                View dialogView = LayoutInflater.from(MainActivity.this)
-                        .inflate(R.layout.dialog_confirm, null);
-
-                TextView mTvReceivedBenefitGuide = (TextView) dialogView.findViewById(R.id.tv_received_benefit_guide);
-                Button mBtnCase1 = (Button) dialogView.findViewById(R.id.btn_case_1);
-                Button mBtnCase2 = (Button) dialogView.findViewById(R.id.btn_case_2);
-
-
-                // Generates an Alert Dialog to show the error message
-                AlertDialog.Builder builder = new AlertDialog.Builder(
-                        MainActivity.this);
-
-                mTvReceivedBenefitGuide.setText("현재 매장 위치를 더욱 쉽게 찾기 위해 위치 서비스를 켜주세요.");
-
-                mBtnCase1.setText("설정");
-                mBtnCase1.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                        mDialog.dismiss();
-                    }
-                });
-
-
-                mBtnCase2.setText("다음에");
-                mBtnCase2.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        isLocationUpdateNextTime = true;
-                        mWebView.loadUrl(DOMAIN_NAME + HOME_PATH + "?lat=0&lng=0");
-                        mDialog.dismiss();
-                    }
-                });
-
-                //다이아로그박스 출력
-                mDialog = builder
-                        .setView(dialogView)
-                        .create();
-                mDialog.show();
-            }
-
-
-            Location lastKnownLocation = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            if (lastKnownLocation == null) {
-                Log.d(TAG, "최초 위치 정보 가져옴, 위치 정보 update 필요");
-                mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
-            } else {
-                mWebView.loadUrl(DOMAIN_NAME + HOME_PATH +
-                        "?lat=" + lastKnownLocation.getLatitude() + "&lng=" + lastKnownLocation.getLongitude());
-
-//                boolean isOlderLocation = (System.currentTimeMillis() - lastKnownLocation.getTime()) > (1000 * 60 * 2);   //15초 지남
-//
-//                Log.d(TAG, isOlderLocation + ", 이전 location: " + lastKnownLocation.getLatitude() + ", " + lastKnownLocation.getLongitude());
-//
-//                if (isOlderLocation) {
-//                    Log.d(TAG, "15초 지남, 위치 정보 update 필요");
-//                    mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
-//                } else {
-//                    Log.d(TAG, "최신 위치 정보임을 확인");
-//                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH +
-//                            "?lat=" + lastKnownLocation.getLatitude() + "&lng=" + lastKnownLocation.getLongitude());
-//                }
-            }
-
-        }
-    }
-
-
-    //위치 서비스 종료
-    private void requestRemoveUpdate() {
-        if ((mLocationManager != null) && (mLocationListener != null)) {
-            mLocationManager.removeUpdates(mLocationListener);
-        }
-    }
-
-
     //권한 허용 안 된 리스트 가져오기
     private List<String> getDeniedPermissions(String... permissions) {
         List<String> deniedPermissions = new ArrayList<>();
@@ -917,16 +773,6 @@ public class MainActivity extends AppCompatActivity
             case STORAGE_PERMISSION:
                 //저장소
                 break;
-            case ROCATION_FIND_PERMISSION:
-                //위치 찾기
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
-//                    mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 100, mLocationListener);
-                } else {
-                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH + "?lat=0&lng=0");
-                }
-                break;
             case CONTACT_PERMISSION:
                 //전화부
                 if (grantResults.length > 0
@@ -955,14 +801,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        requestRemoveUpdate();
     }
 
 
+    @JavascriptInterface
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        JSONObject objRoot = new JSONObject();
-
+        Log.d(TAG, "enter onActivityResult()...");
         switch (requestCode) {
             case 00:
                 if (resultCode == 1) {
@@ -981,7 +826,21 @@ public class MainActivity extends AppCompatActivity
                     Log.d(TAG, "설정 변경");
                     progressOFF();
                 }
+            default:
                 break;
+        }
+
+        // QR코드/ 바코드를 스캔한 결과
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (resultCode == -1) {
+            // result.getFormatName() : 바코드 종류
+            // result.getContents() : 바코드 값
+            Log.d(TAG, resultCode + "QR 코드 스캔 값: " + result.getContents());
+
+            mWebView.loadUrl(DOMAIN_NAME + COUPON_DETAIL_PATH + "?qrVal=" + result.getContents());
+        }
+        else {
+            mWebView.loadUrl(DOMAIN_NAME + COUPON_DETAIL_PATH);
         }
     }
 
