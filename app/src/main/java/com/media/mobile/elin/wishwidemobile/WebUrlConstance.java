@@ -15,6 +15,7 @@ public interface WebUrlConstance {
     String RECEIVED_GIFT_LIST_PATH = "benefit/listReceiveGift";
     String RECEIVED_GIFT_DETIL_PATH = "benefit/detailReceiveGift";
     String SEND_GIFT_LIST_PATH = "benefit/listSendGift";
+    String SEND_GIFT_DETIL_PATH = "benefit/detailSendGift";
     String COUPON_LIST_PATH = "benefit/listCoupon";
     String COUPON_DETAIL_PATH = "benefit/detailCoupon";
 

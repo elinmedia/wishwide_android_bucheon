@@ -22,6 +22,17 @@
             <include layout="@layout/content_main"/>
 
 
+            <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/fab"
+                    app:srcCompat="@drawable/qr_code"
+                    android:theme="@style/AppTheme"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="@dimen/fab_margin"
+                    android:scaleType="centerInside"/>
+
+
             <android.support.design.widget.AppBarLayout
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent"

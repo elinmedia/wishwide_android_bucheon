@@ -13,7 +13,9 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingTop="@dimen/activity_margin_24"
-            android:paddingBottom="@dimen/activity_margin_24">
+            android:paddingBottom="@dimen/activity_margin_24"
+            android:paddingLeft="@dimen/activity_margin_32"
+            android:paddingRight="@dimen/activity_margin_32">
 
 
         <LinearLayout
@@ -35,7 +37,8 @@
         <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+        >
             <Button
                     android:background="@drawable/round_corner_white"
                     android:layout_weight="1"

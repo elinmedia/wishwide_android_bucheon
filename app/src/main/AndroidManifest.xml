@@ -9,8 +9,6 @@ android:versionName="6.0">
             android:minSdkVersion="19"
             android:targetSdkVersion="22"/>
 
-    <!-- OpenglES 2.0 버전 지원되는 디바이스만 구글플레이 스토어에서 다운 가능 -->
-    <uses-feature android:glEsVersion="0x00020000"/>
 
     <!-- 카메라 관련 권한 -->
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -69,7 +67,13 @@ android:versionName="6.0">
                 android:configChanges="keyboardHidden|orientation|screenSize"
                 android:launchMode="singleTask"
                 android:theme="@style/Theme.AppCompat.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
+                <data android:scheme="wishwide"/>
+            </intent-filter>
         </activity>
         <activity
                 android:name=".Activity.SettingActivity"
@@ -79,5 +83,4 @@ android:versionName="6.0">
                   android:theme="@style/Theme.AppCompat.NoActionBar">
         </activity>
     </application>
-
 </manifest>

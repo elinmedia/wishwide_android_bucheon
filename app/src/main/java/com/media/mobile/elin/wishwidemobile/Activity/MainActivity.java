@@ -2,25 +2,20 @@ package com.media.mobile.elin.wishwidemobile.Activity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.ContactsContract;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -32,14 +27,13 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.*;
 import android.webkit.*;
 import android.widget.*;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import com.media.mobile.elin.wishwidemobile.Model.WideCustomerVO;
+import com.media.mobile.elin.wishwidemobile.Model.CustomerVO;
 import com.media.mobile.elin.wishwidemobile.PermissionConstant;
 import com.media.mobile.elin.wishwidemobile.R;
 import com.media.mobile.elin.wishwidemobile.SharedPreferencesConstant;
@@ -50,6 +44,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -67,7 +62,7 @@ public class MainActivity extends AppCompatActivity
     private final Context mContext = this;
 
     private SharedPreferences mSharedPreferences;
-    private WideCustomerVO wideCustomerVO;
+    private CustomerVO customerVO;
 
     //TopBar 관련 멤버변수
     private Toolbar mToolbar;
@@ -79,14 +74,18 @@ public class MainActivity extends AppCompatActivity
     private ImageView mImgTopLogo;
     private TextView mTvTopTilte;
 
+    private FloatingActionButton mFloatingActionButton;
+
     //WebView 관련 멤버변수
     private WebView mWebView;
     private ProgressBar mProgressBar;
-    private SwipeRefreshLayout mSwipeRefresh;
+//    private SwipeRefreshLayout mSwipeRefresh;
     private WebAndAppBridge mWebAndAppBridge;
 
     private AppCompatDialog progressDialog;
     private AlertDialog mDialog;
+
+    private String redirectQR;
 
 
     @Override
@@ -107,6 +106,15 @@ public class MainActivity extends AppCompatActivity
 
         //View 초기화
         initializeView();
+
+        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                IntentIntegrator intentIntegrator = new IntentIntegrator(MainActivity.this);
+                intentIntegrator.initiateScan();
+                redirectQR = "SAVING";
+            }
+        });
 
 
         mWebView.setWebChromeClient(new WebChromeClient() {
@@ -139,8 +147,10 @@ public class MainActivity extends AppCompatActivity
                 mBtnOK.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        result.confirm();
-                        mDialog.dismiss();
+                        if (mDialog.isShowing()) {
+                            result.confirm();
+                            mDialog.dismiss();
+                        }
                     }
                 });
 
@@ -154,8 +164,10 @@ public class MainActivity extends AppCompatActivity
                 new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        result.confirm();
-                        mDialog.dismiss();
+                        if (mDialog.isShowing()) {
+                            result.confirm();
+                            mDialog.dismiss();
+                        }
                     }
                 }, 4500);
                 return true;
@@ -181,6 +193,7 @@ public class MainActivity extends AppCompatActivity
                 mBtnCase1.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+
                         result.confirm();
                         mDialog.dismiss();
                     }
@@ -202,6 +215,15 @@ public class MainActivity extends AppCompatActivity
                         .create();
                 mDialog.show();
 
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mDialog.isShowing()) {
+                            result.cancel();
+                            mDialog.dismiss();
+                        }
+                    }
+                }, 4500);
 
                 return true;
             }
@@ -215,8 +237,37 @@ public class MainActivity extends AppCompatActivity
 
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                return super.shouldOverrideUrlLoading(view, request);
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("javascript:")) {
+                    //3rd-party앱에 대한 URL scheme 대응
+                    Intent intent = null;
+
+                    try {
+                        intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME); //IntentURI처리
+                        Uri uri = Uri.parse(intent.getDataString());
+
+                        startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                        return true;
+                    } catch (URISyntaxException ex) {
+                        return false;
+                    } catch (ActivityNotFoundException e) {
+                        if ( intent == null )	return false;
+
+                        //설치되지 않은 앱에 대해 market이동 처리
+//                        if ( handleNotFoundPaymentScheme(intent.getScheme()) )	return true;
+
+                        //handleNotFoundPaymentScheme()에서 처리되지 않은 것 중, url로부터 package정보를 추출할 수 있는 경우 market이동 처리
+                        String packageName = intent.getPackage();
+                        if (packageName != null) {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + packageName)));
+                            return true;
+                        }
+
+                        return false;
+                    }
+                }
+
+                return false;
             }
 
             @Override
@@ -231,8 +282,8 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "onPageFinished()..." + url);
                 super.onPageFinished(view, url);
 
-                mSwipeRefresh.setRefreshing(false);
-                mSwipeRefresh.setEnabled(true);
+//                mSwipeRefresh.setRefreshing(false);
+//                mSwipeRefresh.setEnabled(true);
 
                 mLlTabs.setVisibility(View.VISIBLE);
                 mToolbar.setVisibility(View.VISIBLE);
@@ -241,33 +292,15 @@ public class MainActivity extends AppCompatActivity
                 mImgTopLogo.setVisibility(View.GONE);
                 mTvTopTilte.setVisibility(View.GONE);
 
+                mFloatingActionButton.setVisibility(View.GONE);
 
-                //AR 게임 실행 버튼 visible
-                if (url.equals(DOMAIN_NAME)) {
-                    mToolbar.setVisibility(View.GONE);
-                    mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);    //menu(navigation) gone setting
-                    mLlTabs.setVisibility(View.GONE);
-
-//                        setWebViewScrollable(false);
-                    mSwipeRefresh.setEnabled(false);
-
-//                        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-
-//                        String localPhoneNum = telephonyManager.getLine1Number();
-//                        if (localPhoneNum != null) {
-//                            localPhoneNum = localPhoneNum.replace("+82", "0");
-//                            Log.d(TAG, "현재 디바이스의 전화번호 확인: " + localPhoneNum);
-//
-//                            mWebView.loadUrl("javascript:getDevicePhoneNum(" + localPhoneNum + ")");
-//                        }
-                    mWebView.clearHistory();
-                }
                 if (url.contains(DOMAIN_NAME + "gift/")) {   //선물가게
                     mTvTopTilte.setVisibility(View.VISIBLE);
                     mTvTopTilte.setText("선물가게");
                 }
                 else if (url.contains(DOMAIN_NAME + HOME_PATH)) { //홈
                     mImgTopLogo.setVisibility(View.VISIBLE);
+                    mFloatingActionButton.setVisibility(View.VISIBLE);
 
                     mWebView.clearHistory();
 
@@ -279,21 +312,31 @@ public class MainActivity extends AppCompatActivity
 
 
                     //매장명 set
-                    String wideCustomerName = mSharedPreferences.getString(WIDE_CUSTOMER_NAME_KEY, "GUEST");
-                    if (wideCustomerName == null) {
-                        wideCustomerName = "";
+                    String Name = mSharedPreferences.getString(WIDE_CUSTOMER_NAME_KEY, "GUEST");
+                    if (Name == null) {
+                        Name = "";
                     }
-                    Log.d(TAG, "고객명 확인: " + wideCustomerName);
+                    Log.d(TAG, "고객명 확인: " + Name);
                 }
                 else if (url.contains(DOMAIN_NAME + STAMP_AND_POINT_LIST_DETAIL_PATH) || url.contains(DOMAIN_NAME + STAMP_AND_POINT_LIST_HISTORY_PATH)) {
                     //도장/포인트 내역
                     mTvTopTilte.setVisibility(View.VISIBLE);
                     mTvTopTilte.setText("도장/포인트");
                 }
-                else if (url.contains(DOMAIN_NAME + JOIN_PATH)) {
+                else if (url.contains(DOMAIN_NAME + JOIN_PATH) || url.equals(DOMAIN_NAME)) {
                     mToolbar.setVisibility(View.GONE);
                     mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);    //menu(navigation) gone
                     mLlTabs.setVisibility(View.GONE);
+
+//                    mSwipeRefresh.setEnabled(false);
+//                        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+//                        String localPhoneNum = telephonyManager.getLine1Number();
+//                        if (localPhoneNum != null) {
+//                            localPhoneNum = localPhoneNum.replace("+82", "0");
+//                            Log.d(TAG, "현재 디바이스의 전화번호 확인: " + localPhoneNum);
+//
+//                            mWebView.loadUrl("javascript:getDevicePhoneNum(" + localPhoneNum + ")");
+//                        }
                 }
                 else if (url.contains(DOMAIN_NAME + COUPON_LIST_PATH) || url.contains(DOMAIN_NAME + COUPON_DETAIL_PATH)) {
                     mTvTopTilte.setVisibility(View.VISIBLE);
@@ -303,19 +346,28 @@ public class MainActivity extends AppCompatActivity
                     mTvTopTilte.setVisibility(View.VISIBLE);
                     mTvTopTilte.setText("받은 선물함");
                 }
+                else if (url.contains(DOMAIN_NAME + SEND_GIFT_LIST_PATH) || url.contains(DOMAIN_NAME + SEND_GIFT_DETIL_PATH)) {
+                    mTvTopTilte.setVisibility(View.VISIBLE);
+                    mTvTopTilte.setText("보낸 선물함");
+                }
+                else {
+                    mToolbar.setVisibility(View.GONE);
+                    mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);    //menu(navigation) gone
+                    mLlTabs.setVisibility(View.GONE);
 
-                progressOFF();
+//                    mSwipeRefresh.setEnabled(false);
+                }
             }
 
         });
 
 
-        mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                mWebView.reload();
-            }
-        });
+//        mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+//            @Override
+//            public void onRefresh() {
+//                mWebView.reload();
+//            }
+//        });
 
 
         String responseCode = getIntent().getStringExtra("responseCode");
@@ -324,8 +376,8 @@ public class MainActivity extends AppCompatActivity
         if (responseCode.equals("AUTO")) {
             JSONObject objRoot = new JSONObject();
             try {
-                Log.d(TAG, "전화번호 확인: " + getIntent().getStringExtra("wideCustomerPhone"));
-                objRoot.put("wideCustomerPhone", getIntent().getStringExtra("wideCustomerPhone"));
+                Log.d(TAG, "전화번호 확인: " + getIntent().getStringExtra("Phone"));
+                objRoot.put("Phone", getIntent().getStringExtra("Phone"));
 
                 mWebView.postUrl(DOMAIN_NAME, EncodingUtils.getBytes(objRoot.toString(), "UTF-8"));
             } catch (JSONException e) {
@@ -361,6 +413,8 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
+        mFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
+        mFloatingActionButton.setVisibility(View.GONE);
 
         mDrawerLayout.addDrawerListener(mActionBarDrawerToggle);
         mActionBarDrawerToggle.syncState();
@@ -390,7 +444,7 @@ public class MainActivity extends AppCompatActivity
         mProgressBar.setMax(100);
 
         mWebView = (WebView) findViewById(R.id.web_view);
-        mSwipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+//        mSwipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.getSettings().setDomStorageEnabled(true);
         mWebView.getSettings().setUseWideViewPort(true);
@@ -416,7 +470,7 @@ public class MainActivity extends AppCompatActivity
             case R.id.btn_1:
 //                if (isLocationUpdateNextTime) {
 //                    //위치 서비스 켜기 "다음에" 누르면 매장 전체 검색
-                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH + "?lat=0&lng=0");
+                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH);
 //                } else {
 //                    requestLocationUpdate();
 //                }
@@ -437,6 +491,8 @@ public class MainActivity extends AppCompatActivity
         }
 //        progressON(this, "로딩 중...");
     }
+
+
 
 
     //Web의 javascript와 앱을 연결해주는 클래스
@@ -532,7 +588,8 @@ public class MainActivity extends AppCompatActivity
 
         @JavascriptInterface
         public void callQRCodeScanner(String type) {
-            Log.d(TAG, "enter callQRCodeScanner()...");
+            Log.d(TAG, "enter callQRCodeScanner()... " + type);
+            redirectQR = type;
             IntentIntegrator intentIntegrator = new IntentIntegrator(MainActivity.this);
             intentIntegrator.initiateScan();
         }
@@ -586,33 +643,33 @@ public class MainActivity extends AppCompatActivity
 
         @JavascriptInterface
         public void setCustomerInfo(
-                String wideCustomerPhone,
-                int wideCustomerNo,
-                String wideCustomerEmail,
-                String wideCustomerBirth,
-                String wideCustomerName,
-                int wideCustomerSex) {
+                String phone,
+                int no,
+                String email,
+                String birth,
+                String name,
+                int gender) {
 
-            if (wideCustomerVO == null) {
-                wideCustomerVO = new WideCustomerVO();
+            if (customerVO == null) {
+               customerVO = new CustomerVO();
             }
 
-            wideCustomerVO.setWideCustomerNo(wideCustomerNo);
-            wideCustomerVO.setWideCustomerPhone(wideCustomerPhone);
-            wideCustomerVO.setWideCustomerBirth(wideCustomerBirth);
-            wideCustomerVO.setWideCustomerSex(wideCustomerSex);
-            wideCustomerVO.setWideCustomerEmail(wideCustomerEmail);
-            wideCustomerVO.setWideCustomerName(wideCustomerName);
+            customerVO.setNo(no);
+            customerVO.setPhone(phone);
+            customerVO.setBirth(birth);
+            customerVO.setGender(gender);
+            customerVO.setEmail(email);
+            customerVO.setName(name);
 
-            Log.d(TAG, wideCustomerVO.toString());
+            Log.d(TAG, customerVO.toString());
 //
             SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString(WIDE_CUSTOMER_PHONE_KEY, wideCustomerPhone);
-            editor.putInt(WIDE_CUSTOMER_NO_KEY, wideCustomerNo);
-            editor.putString(WIDE_CUSTOMER_BIRTH_KEY, wideCustomerBirth);
-            editor.putString(WIDE_CUSTOMER_SEX_KEY, wideCustomerSex + "");
-            editor.putString(WIDE_CUSTOMER_EMAIL_KEY, wideCustomerEmail);
-            editor.putString(WIDE_CUSTOMER_NAME_KEY, wideCustomerName);
+            editor.putString(WIDE_CUSTOMER_PHONE_KEY, phone);
+            editor.putInt(WIDE_CUSTOMER_NO_KEY, no);
+            editor.putString(WIDE_CUSTOMER_BIRTH_KEY, birth);
+            editor.putString(WIDE_CUSTOMER_SEX_KEY, gender + "");
+            editor.putString(WIDE_CUSTOMER_EMAIL_KEY, email);
+            editor.putString(WIDE_CUSTOMER_NAME_KEY, name);
             editor.commit();
         }
     }
@@ -814,6 +871,8 @@ public class MainActivity extends AppCompatActivity
                     SharedPreferences.Editor editor = mSharedPreferences.edit();
                     editor.putBoolean(WHETHER_PERMISSION_GUIDE_SHOW_KEY, true);
                     editor.commit();
+
+                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH);
                 }
                 break;
             case 11:
@@ -824,7 +883,6 @@ public class MainActivity extends AppCompatActivity
                 } else if (resultCode == 2) {
                     //설정 변경
                     Log.d(TAG, "설정 변경");
-                    progressOFF();
                 }
             default:
                 break;
@@ -837,71 +895,45 @@ public class MainActivity extends AppCompatActivity
             // result.getContents() : 바코드 값
             Log.d(TAG, resultCode + "QR 코드 스캔 값: " + result.getContents());
 
-            mWebView.loadUrl(DOMAIN_NAME + COUPON_DETAIL_PATH + "?qrVal=" + result.getContents());
+            switch (redirectQR) {
+                case "GIFT":
+                    redirectQR = "";
+                    mWebView.loadUrl(DOMAIN_NAME + COUPON_DETAIL_PATH + "?qrVal=" + result.getContents());
+                    break;
+                case "COUPON":
+                    redirectQR = "";
+                    mWebView.loadUrl(DOMAIN_NAME + RECEIVED_GIFT_DETIL_PATH + "?qrVal=" + result.getContents());
+                    break;
+                case "SAVING":
+                    redirectQR = "";
+                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH + "?qrVal=" + result.getContents());
+                    break;
+                default:
+                    redirectQR = "";
+                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH);
+                    break;
+            }
+
         }
         else {
-            mWebView.loadUrl(DOMAIN_NAME + COUPON_DETAIL_PATH);
-        }
-    }
-
-
-    //prograss message setting and show progress
-    public void progressON(Activity activity, String message) {
-        if (activity == null || activity.isFinishing()) {
-            Log.d(TAG, "액티비티 return");
-            return;
-        }
-
-
-        if (progressDialog != null && progressDialog.isShowing()) {
-            Log.d(TAG, "progressDialog is not null");
-            progressSET(message);
-        } else {
-            Log.d(TAG, "progressDialog is null");
-            progressDialog = new AppCompatDialog(activity);
-            progressDialog.setCancelable(false);
-            progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-            progressDialog.setContentView(R.layout.progress_loading);
-            progressDialog.show();
-
-        }
-
-
-        final ImageView img_loading_frame = (ImageView) progressDialog.findViewById(R.id.iv_frame_loading);
-        final AnimationDrawable frameAnimation = (AnimationDrawable) img_loading_frame.getBackground();
-        img_loading_frame.post(new Runnable() {
-            @Override
-            public void run() {
-                frameAnimation.start();
+            switch (redirectQR) {
+                case "GIFT":
+                    redirectQR = "";
+                    mWebView.loadUrl(DOMAIN_NAME + COUPON_DETAIL_PATH);
+                    break;
+                case "COUPON":
+                    redirectQR = "";
+                    mWebView.loadUrl(DOMAIN_NAME + RECEIVED_GIFT_DETIL_PATH);
+                    break;
+                case "SAVING":
+                    redirectQR = "";
+                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH );
+                    break;
+                default:
+                    redirectQR = "";
+                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH);
+                    break;
             }
-        });
-
-        TextView tv_progress_message = (TextView) progressDialog.findViewById(R.id.tv_progress_message);
-        if (!TextUtils.isEmpty(message)) {
-            tv_progress_message.setText(message);
-        }
-    }
-
-
-    //progress message setting
-    private void progressSET(String message) {
-        if (progressDialog == null || !progressDialog.isShowing()) {
-            return;
-        }
-
-
-        TextView tv_progress_message = (TextView) progressDialog.findViewById(R.id.tv_progress_message);
-        if (!TextUtils.isEmpty(message)) {
-            tv_progress_message.setText(message);
-        }
-
-    }
-
-
-    //progress off
-    private void progressOFF() {
-        if (progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.dismiss();
         }
     }
 }
