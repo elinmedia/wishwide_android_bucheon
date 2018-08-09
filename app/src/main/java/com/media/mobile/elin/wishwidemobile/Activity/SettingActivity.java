@@ -35,7 +35,7 @@ public class SettingActivity
 
         mSharedPreferences = this.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
 
-        String phone = mSharedPreferences.getString(WIDE_CUSTOMER_PHONE_KEY, "");
+        String phone = mSharedPreferences.getString(CUSTOMER_PHONE_KEY, "");
         if ((phone == null) || phone.equals("")) {
             SharedPreferences.Editor editor = mSharedPreferences.edit();
             editor.clear();
@@ -46,11 +46,11 @@ public class SettingActivity
             finish();
         }
 
-        String birth = mSharedPreferences.getString(WIDE_CUSTOMER_BIRTH_KEY, "");
+        String birth = mSharedPreferences.getString(CUSTOMER_BIRTH_KEY, "");
 
         tvPhone.setText(PhoneNumberUtils.formatNumber(phone));
-        tvEmail.setText(mSharedPreferences.getString(WIDE_CUSTOMER_EMAIL_KEY, ""));
-        tvName.setText(mSharedPreferences.getString(WIDE_CUSTOMER_NAME_KEY, ""));
+        tvEmail.setText(mSharedPreferences.getString(CUSTOMER_EMAIL_KEY, ""));
+        tvName.setText(mSharedPreferences.getString(CUSTOMER_NAME_KEY, ""));
 
         if ((birth != null) && birth.length() == 8) {
             tvBirth.setText(
@@ -59,7 +59,7 @@ public class SettingActivity
                             +birth.substring(6, 8)+"일");
         }
 
-        tvGender.setText(mSharedPreferences.getString(WIDE_CUSTOMER_SEX_KEY, "").equals("0") ? "남자" : "여자");
+        tvGender.setText(mSharedPreferences.getString(CUSTOMER_SEX_KEY, "").equals("0") ? "남자" : "여자");
 //        tvAppVersion.setText("0.0");
 
         btnLogout.setOnClickListener(new View.OnClickListener() {

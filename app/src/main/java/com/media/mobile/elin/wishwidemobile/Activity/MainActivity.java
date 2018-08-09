@@ -2,10 +2,7 @@ package com.media.mobile.elin.wishwidemobile.Activity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -141,6 +138,19 @@ public class MainActivity extends AppCompatActivity
                 AlertDialog.Builder builder = new AlertDialog.Builder(
                         view.getContext());
 
+                builder.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                    @Override
+                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                        if (keyCode == KeyEvent.KEYCODE_BACK) {
+                            result.confirm();
+                            mDialog.dismiss();
+
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+
                 mTvReceivedBenefitGuide.setText(message);
 
                 mBtnOK.setText(android.R.string.ok);
@@ -161,15 +171,15 @@ public class MainActivity extends AppCompatActivity
                         .create();
                 mDialog.show();
 
-                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mDialog.isShowing()) {
-                            result.confirm();
-                            mDialog.dismiss();
-                        }
-                    }
-                }, 4500);
+//                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        if (mDialog.isShowing()) {
+//                            result.confirm();
+//                            mDialog.dismiss();
+//                        }
+//                    }
+//                }, 4500);
                 return true;
             }
 
@@ -187,13 +197,25 @@ public class MainActivity extends AppCompatActivity
                 AlertDialog.Builder builder = new AlertDialog.Builder(
                         view.getContext());
 
+                builder.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                    @Override
+                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                        if (keyCode == KeyEvent.KEYCODE_BACK) {
+                            result.cancel();
+                            mDialog.dismiss();
+
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+
                 mTvReceivedBenefitGuide.setText(message);
 
                 mBtnCase1.setText(android.R.string.ok);
                 mBtnCase1.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
                         result.confirm();
                         mDialog.dismiss();
                     }
@@ -215,15 +237,15 @@ public class MainActivity extends AppCompatActivity
                         .create();
                 mDialog.show();
 
-                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mDialog.isShowing()) {
-                            result.cancel();
-                            mDialog.dismiss();
-                        }
-                    }
-                }, 4500);
+//                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        if (mDialog.isShowing()) {
+//                            result.cancel();
+//                            mDialog.dismiss();
+//                        }
+//                    }
+//                }, 4500);
 
                 return true;
             }
@@ -312,7 +334,7 @@ public class MainActivity extends AppCompatActivity
 
 
                     //매장명 set
-                    String Name = mSharedPreferences.getString(WIDE_CUSTOMER_NAME_KEY, "GUEST");
+                    String Name = mSharedPreferences.getString(CUSTOMER_NAME_KEY, "GUEST");
                     if (Name == null) {
                         Name = "";
                     }
@@ -664,12 +686,12 @@ public class MainActivity extends AppCompatActivity
             Log.d(TAG, customerVO.toString());
 //
             SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString(WIDE_CUSTOMER_PHONE_KEY, phone);
-            editor.putInt(WIDE_CUSTOMER_NO_KEY, no);
-            editor.putString(WIDE_CUSTOMER_BIRTH_KEY, birth);
-            editor.putString(WIDE_CUSTOMER_SEX_KEY, gender + "");
-            editor.putString(WIDE_CUSTOMER_EMAIL_KEY, email);
-            editor.putString(WIDE_CUSTOMER_NAME_KEY, name);
+            editor.putString(CUSTOMER_PHONE_KEY, phone);
+            editor.putInt(CUSTOMER_NO_KEY, no);
+            editor.putString(CUSTOMER_BIRTH_KEY, birth);
+            editor.putString(CUSTOMER_SEX_KEY, gender + "");
+            editor.putString(CUSTOMER_EMAIL_KEY, email);
+            editor.putString(CUSTOMER_NAME_KEY, name);
             editor.commit();
         }
     }
@@ -683,6 +705,11 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (mDialog !=null && mDialog.isShowing()) {
+            Log.d(TAG, "enter mDialog!!");
+            mDialog.dismiss();
+        }
+
         if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
 
@@ -701,7 +728,8 @@ public class MainActivity extends AppCompatActivity
             }
 
             return true;
-        } else {
+        }
+        else {
             View dialogView = LayoutInflater.from(MainActivity.this)
                     .inflate(R.layout.dialog_confirm, null);
 
