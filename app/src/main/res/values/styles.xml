@@ -3,10 +3,11 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorDarkBlack</item>
+        <item name="colorPrimary">@color/colorMiddleGray</item>
         <item name="colorPrimaryDark">@color/white</item>
         <item name="android:textColorPrimary">@color/white</item>
         <item name="colorAccent">@color/colorVividCyan</item>
+        <!--<item name="colorAccent">@color/colorVividCyan</item>-->
         <item name="android:textColorSecondary">@color/colorWhite</item>
 
         <item name="windowActionBar">true</item>

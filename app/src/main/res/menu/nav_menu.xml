@@ -27,7 +27,7 @@
 
     <item
             android:id="@+id/nav_point_and_stamp"
-            android:title="도장/포인트"
+            android:title="도장"
             android:icon="@drawable/ic_menu_stamp">
     </item>
 

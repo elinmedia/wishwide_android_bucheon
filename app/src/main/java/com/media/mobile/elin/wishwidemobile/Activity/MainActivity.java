@@ -6,16 +6,17 @@ import android.content.*;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
+import android.os.*;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -24,6 +25,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.Toolbar;
+import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.*;
 import android.webkit.*;
@@ -36,14 +39,20 @@ import com.media.mobile.elin.wishwidemobile.R;
 import com.media.mobile.elin.wishwidemobile.SharedPreferencesConstant;
 import com.media.mobile.elin.wishwidemobile.WebUrlConstance;
 import com.tsengvn.typekit.TypekitContextWrapper;
+import gun0912.tedbottompicker.util.RealPathUtil;
 import org.apache.http.util.EncodingUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 
@@ -75,7 +84,7 @@ public class MainActivity extends AppCompatActivity
 
     //WebView 관련 멤버변수
     private WebView mWebView;
-    private ProgressBar mProgressBar;
+//    private ProgressBar mProgressBar;
 //    private SwipeRefreshLayout mSwipeRefresh;
     private WebAndAppBridge mWebAndAppBridge;
 
@@ -83,6 +92,13 @@ public class MainActivity extends AppCompatActivity
     private AlertDialog mDialog;
 
     private String redirectQR;
+
+    private static final String TYPE_IMAGE = "image/*";
+    private static final int INPUT_FILE_REQUEST_CODE = 1;
+
+    private ValueCallback<Uri> mUploadMessage;
+    private ValueCallback<Uri[]> mFilePathCallback;
+    private String mCameraPhotoPath;
 
 
     @Override
@@ -107,23 +123,74 @@ public class MainActivity extends AppCompatActivity
         mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                IntentIntegrator intentIntegrator = new IntentIntegrator(MainActivity.this);
-                intentIntegrator.initiateScan();
-                redirectQR = "SAVING";
+                View dialogView = LayoutInflater.from(MainActivity.this)
+                        .inflate(R.layout.dialog_confirm, null);
+
+                TextView mTvReceivedBenefitGuide = (TextView) dialogView.findViewById(R.id.tv_received_benefit_guide);
+                Button mBtnCase1 = (Button) dialogView.findViewById(R.id.btn_case_1);
+                Button mBtnCase2 = (Button) dialogView.findViewById(R.id.btn_case_2);
+
+
+                // Generates an Alert Dialog to show the error message
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+                builder.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                    @Override
+                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                    if (keyCode == KeyEvent.KEYCODE_BACK) {
+                        mDialog.dismiss();
+
+                        return true;
+                    }
+                    return false;
+                    }
+                });
+
+                String message = "도장 적립을 위해\nQR 코드 인식 모드로 전환됩니다.";
+                mTvReceivedBenefitGuide.setText(message);
+
+                mBtnCase1.setText(android.R.string.ok);
+                mBtnCase1.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                    mDialog.dismiss();
+
+                    IntentIntegrator intentIntegrator = new IntentIntegrator(MainActivity.this);
+                    intentIntegrator.setCaptureActivity(QRCodeScannerActivity.class);
+                    intentIntegrator.setOrientationLocked(false);
+                    intentIntegrator.initiateScan();
+                    redirectQR = "SAVING";
+                    }
+                });
+
+
+                mBtnCase2.setText(android.R.string.cancel);
+                mBtnCase2.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialog.dismiss();
+                    }
+                });
+
+                //다이아로그박스 출력
+                mDialog = builder
+                        .setView(dialogView)
+                        .create();
+                mDialog.show();
             }
         });
 
 
         mWebView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onProgressChanged(WebView view, int newProgress) {
-                if (newProgress == 100) {
-                    mProgressBar.setVisibility(View.GONE);
-                } else {
-                    mProgressBar.setVisibility(View.VISIBLE);
-                    mProgressBar.setProgress(newProgress);
-                }
-            }
+//            @Override
+//            public void onProgressChanged(WebView view, int newProgress) {
+//                if (newProgress == 100) {
+//                    mProgressBar.setVisibility(View.GONE);
+//                } else {
+//                    mProgressBar.setVisibility(View.VISIBLE);
+//                    mProgressBar.setProgress(newProgress);
+//                }
+//            }
 
             @Override
             public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
@@ -141,13 +208,13 @@ public class MainActivity extends AppCompatActivity
                 builder.setOnKeyListener(new DialogInterface.OnKeyListener() {
                     @Override
                     public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                        if (keyCode == KeyEvent.KEYCODE_BACK) {
-                            result.confirm();
-                            mDialog.dismiss();
+                    if (keyCode == KeyEvent.KEYCODE_BACK) {
+                        result.confirm();
+                        mDialog.dismiss();
 
-                            return true;
-                        }
-                        return false;
+                        return true;
+                    }
+                    return false;
                     }
                 });
 
@@ -157,10 +224,10 @@ public class MainActivity extends AppCompatActivity
                 mBtnOK.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (mDialog.isShowing()) {
-                            result.confirm();
-                            mDialog.dismiss();
-                        }
+                    if (mDialog.isShowing()) {
+                        result.confirm();
+                        mDialog.dismiss();
+                    }
                     }
                 });
 
@@ -200,13 +267,13 @@ public class MainActivity extends AppCompatActivity
                 builder.setOnKeyListener(new DialogInterface.OnKeyListener() {
                     @Override
                     public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                        if (keyCode == KeyEvent.KEYCODE_BACK) {
-                            result.cancel();
-                            mDialog.dismiss();
+                    if (keyCode == KeyEvent.KEYCODE_BACK) {
+                        result.cancel();
+                        mDialog.dismiss();
 
-                            return true;
-                        }
-                        return false;
+                        return true;
+                    }
+                    return false;
                     }
                 });
 
@@ -226,8 +293,8 @@ public class MainActivity extends AppCompatActivity
                 mBtnCase2.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        result.cancel();
-                        mDialog.dismiss();
+                    result.cancel();
+                    mDialog.dismiss();
                     }
                 });
 
@@ -253,6 +320,98 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onReceivedTitle(WebView view, String title) {
                 super.onReceivedTitle(view, title);
+            }
+
+            // For Android Version < 3.0
+            public void openFileChooser(ValueCallback<Uri> uploadMsg) {
+                //Log.d(TAG, "WebViewActivity OS Version : " + Build.VERSION.SDK_INT + "\t openFC(VCU), n=1");
+                mUploadMessage = uploadMsg;
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType(TYPE_IMAGE);
+                startActivityForResult(intent, INPUT_FILE_REQUEST_CODE);
+            }
+
+            // For 3.0 <= Android Version < 4.1
+            public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType) {
+                //Log.d(TAG, "WebViewActivity 3<A<4.1, OS Version : " + Build.VERSION.SDK_INT + "\t openFC(VCU,aT), n=2");
+                openFileChooser(uploadMsg, acceptType, "");
+            }
+
+            // For 4.1 <= Android Version < 5.0
+            public void openFileChooser(ValueCallback<Uri> uploadFile, String acceptType, String capture) {
+                Log.d(getClass().getName(), "openFileChooser : "+acceptType+"/"+capture);
+                mUploadMessage = uploadFile;
+                imageChooser();
+            }
+
+            // For Android Version 5.0+
+            // Ref: https://github.com/GoogleChrome/chromium-webview-samples/blob/master/input-file-example/app/src/main/java/inputfilesample/android/chrome/google/com/inputfilesample/MainFragment.java
+            public boolean onShowFileChooser(WebView webView,
+                                             ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+                Log.d(TAG, "WebViewActivity A>5, OS Version : " + Build.VERSION.SDK_INT + "\t onSFC(WV,VCUB,FCP), n=3");
+                if (mFilePathCallback != null) {
+                    mFilePathCallback.onReceiveValue(null);
+                }
+                mFilePathCallback = filePathCallback;
+                imageChooser();
+                return true;
+            }
+
+            private void imageChooser() {
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    // Create the File where the photo should go
+                    File photoFile = null;
+                    try {
+                        photoFile = createImageFile();
+                        takePictureIntent.putExtra("PhotoPath", mCameraPhotoPath);
+                    } catch (IOException ex) {
+                        // Error occurred while creating the File
+                        Log.e(getClass().getName(), "Unable to create Image File", ex);
+                    }
+
+                    // Continue only if the File was successfully created
+                    if (photoFile != null) {
+                        mCameraPhotoPath = "file:"+photoFile.getAbsolutePath();
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+                            Uri.fromFile(photoFile));
+                    } else {
+                        takePictureIntent = null;
+                    }
+                }
+
+                Intent contentSelectionIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE);
+                contentSelectionIntent.setType(TYPE_IMAGE);
+
+                Intent[] intentArray;
+                if(takePictureIntent != null) {
+                    intentArray = new Intent[]{takePictureIntent};
+                } else {
+                    intentArray = new Intent[0];
+                }
+
+                Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
+                chooserIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent);
+                chooserIntent.putExtra(Intent.EXTRA_TITLE, "Image Chooser");
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray);
+
+                startActivityForResult(chooserIntent, INPUT_FILE_REQUEST_CODE);
+            }
+
+            private File createImageFile() throws IOException {
+                // Create an image file name
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                String imageFileName = "JPEG_" + timeStamp + "_";
+                File storageDir = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_PICTURES);
+                File imageFile = File.createTempFile(
+                    imageFileName,  /* prefix */
+                    ".jpg",         /* suffix */
+                    storageDir      /* directory */
+                );
+                return imageFile;
             }
         });
 
@@ -294,7 +453,7 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
-//                Log.d(TAG, "onPageStarted()..." + url);
+                Log.d(TAG, "onPageStarted()..." + url);
 //                progressON(MainActivity.this, "로딩 중...");
                 super.onPageStarted(view, url, favicon);
             }
@@ -343,22 +502,30 @@ public class MainActivity extends AppCompatActivity
                 else if (url.contains(DOMAIN_NAME + STAMP_AND_POINT_LIST_DETAIL_PATH) || url.contains(DOMAIN_NAME + STAMP_AND_POINT_LIST_HISTORY_PATH)) {
                     //도장/포인트 내역
                     mTvTopTilte.setVisibility(View.VISIBLE);
-                    mTvTopTilte.setText("도장/포인트");
+                    mTvTopTilte.setText("도장");
                 }
-                else if (url.contains(DOMAIN_NAME + JOIN_PATH) || url.equals(DOMAIN_NAME)) {
+                else if (url.equals(DOMAIN_NAME)) {
+                    mToolbar.setVisibility(View.GONE);
+                    mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);    //menu(navigation) gone
+                    mLlTabs.setVisibility(View.GONE);
+
+                    mWebView.clearHistory();
+
+                    TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+                    String localPhoneNum = telephonyManager.getLine1Number();
+                    if (localPhoneNum != null) {
+                        localPhoneNum = localPhoneNum.replace("+82", "0");
+                        Log.d(TAG, "현재 디바이스의 전화번호 확인: " + localPhoneNum);
+
+                        mWebView.loadUrl("javascript:callGetDevicePhone("  + localPhoneNum + ")");
+                    }
+                }
+                else if (url.contains(DOMAIN_NAME + JOIN_PATH)) {
                     mToolbar.setVisibility(View.GONE);
                     mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);    //menu(navigation) gone
                     mLlTabs.setVisibility(View.GONE);
 
 //                    mSwipeRefresh.setEnabled(false);
-//                        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-//                        String localPhoneNum = telephonyManager.getLine1Number();
-//                        if (localPhoneNum != null) {
-//                            localPhoneNum = localPhoneNum.replace("+82", "0");
-//                            Log.d(TAG, "현재 디바이스의 전화번호 확인: " + localPhoneNum);
-//
-//                            mWebView.loadUrl("javascript:getDevicePhoneNum(" + localPhoneNum + ")");
-//                        }
                 }
                 else if (url.contains(DOMAIN_NAME + COUPON_LIST_PATH) || url.contains(DOMAIN_NAME + COUPON_DETAIL_PATH)) {
                     mTvTopTilte.setVisibility(View.VISIBLE);
@@ -396,15 +563,11 @@ public class MainActivity extends AppCompatActivity
 
 
         if (responseCode.equals("AUTO")) {
-            JSONObject objRoot = new JSONObject();
-            try {
-                Log.d(TAG, "전화번호 확인: " + getIntent().getStringExtra("Phone"));
-                objRoot.put("Phone", getIntent().getStringExtra("Phone"));
+            Log.d(TAG, "전화번호 확인: " + getIntent().getStringExtra("customerPhone"));
+            String postData = "?phone=" + getIntent().getStringExtra("customerPhone");
+            mWebView.loadUrl(DOMAIN_NAME + postData);
 
-                mWebView.postUrl(DOMAIN_NAME, EncodingUtils.getBytes(objRoot.toString(), "UTF-8"));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+//            mWebView.postUrl(DOMAIN_NAME + AUTO_LOGIN_PATH, EncodingUtils.getBytes(postData, "BASE64"));
 
         } else if (responseCode.equals("LOGIN")) {
             //로그인 url 이동
@@ -462,8 +625,8 @@ public class MainActivity extends AppCompatActivity
         mNavigationView = (NavigationView) findViewById(R.id.nav_view);
         mNavigationView.setNavigationItemSelectedListener(this);
 
-        mProgressBar = (ProgressBar) findViewById(R.id.pb_web_loading);
-        mProgressBar.setMax(100);
+//        mProgressBar = (ProgressBar) findViewById(R.id.pb_web_loading);
+//        mProgressBar.setMax(100);
 
         mWebView = (WebView) findViewById(R.id.web_view);
 //        mSwipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
@@ -545,8 +708,14 @@ public class MainActivity extends AppCompatActivity
 
 
         @JavascriptInterface
-        public void callClearWebViewHistory() {
-            mWebView.clearHistory();
+        public void callClearWebHistory() {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "enter callClearWebHistory()...");
+                    mWebView.clearHistory();
+                }
+            });
         }
 
 
@@ -613,6 +782,8 @@ public class MainActivity extends AppCompatActivity
             Log.d(TAG, "enter callQRCodeScanner()... " + type);
             redirectQR = type;
             IntentIntegrator intentIntegrator = new IntentIntegrator(MainActivity.this);
+            intentIntegrator.setCaptureActivity(QRCodeScannerActivity.class);
+            intentIntegrator.setOrientationLocked(false);
             intentIntegrator.initiateScan();
         }
 
@@ -664,13 +835,27 @@ public class MainActivity extends AppCompatActivity
 
 
         @JavascriptInterface
-        public void setCustomerInfo(
-                String phone,
+        public void callDevicePhone() {
+            TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            String localPhoneNum = telephonyManager.getLine1Number();
+            if (localPhoneNum != null) {
+                localPhoneNum = localPhoneNum.replace("+82", "0");
+                Log.d(TAG, "현재 디바이스의 전화번호 확인: " + localPhoneNum);
+
+                mWebView.loadUrl("javascript:alert(" + localPhoneNum + ")");
+            }
+        }
+
+
+        @JavascriptInterface
+        public void callCustomerInfoStorage(
                 int no,
-                String email,
-                String birth,
+                String phone,
                 String name,
-                int gender) {
+                int gender,
+                String birth,
+                String email) {
+            Log.d(TAG, "callCustomerInfoStorage...");
 
             if (customerVO == null) {
                customerVO = new CustomerVO();
@@ -721,11 +906,11 @@ public class MainActivity extends AppCompatActivity
 
 //            WebBackForwardList list = mWebView.copyBackForwardList();
 
-            if (mWebView.getUrl().contains(DOMAIN_NAME + GIFT_ORDER_PATH)) {
-                mWebView.goBackOrForward(-1);
-                // history 삭제
-                mWebView.clearHistory();
-            }
+//            if (mWebView.getUrl().contains(DOMAIN_NAME + GIFT_ORDER_PATH)) {
+//                mWebView.goBackOrForward(-1);
+//                // history 삭제
+//                mWebView.clearHistory();
+//            }
 
             return true;
         }
@@ -908,60 +1093,112 @@ public class MainActivity extends AppCompatActivity
                     //로그아웃
                     Log.d(TAG, "로그아웃 시도");
                     mWebView.loadUrl(DOMAIN_NAME);
+
                 } else if (resultCode == 2) {
                     //설정 변경
                     Log.d(TAG, "설정 변경");
                 }
+            case INPUT_FILE_REQUEST_CODE:
+                if (resultCode == RESULT_OK) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        if (mFilePathCallback == null) {
+                            super.onActivityResult(requestCode, resultCode, data);
+                            return;
+                        }
+                        Uri[] results = new Uri[]{getResultUri(data)};
+
+                        mFilePathCallback.onReceiveValue(results);
+                        mFilePathCallback = null;
+                    } else {
+                        if (mUploadMessage == null) {
+                            super.onActivityResult(requestCode, resultCode, data);
+                            return;
+                        }
+                        Uri result = getResultUri(data);
+
+                        Log.d(getClass().getName(), "openFileChooser : "+result);
+                        mUploadMessage.onReceiveValue(result);
+                        mUploadMessage = null;
+                    }
+                }
+                else {
+                    if (mFilePathCallback != null) mFilePathCallback.onReceiveValue(null);
+                    if (mUploadMessage != null) mUploadMessage.onReceiveValue(null);
+                    mFilePathCallback = null;
+                    mUploadMessage = null;
+                    super.onActivityResult(requestCode, resultCode, data);
+                }
+                break;
             default:
+                // QR코드/ 바코드를 스캔한 결과
+                IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+                if (resultCode == -1) {
+                    // result.getFormatName() : 바코드 종류
+                    // result.getContents() : 바코드 값
+                    Log.d(TAG, resultCode + "QR 코드 스캔 값: " + result.getContents());
+
+                    switch (redirectQR) {
+                        case "GIFT":
+                            redirectQR = "";
+                            mWebView.loadUrl(DOMAIN_NAME + RECEIVED_GIFT_DETIL_PATH + "?qrVal=" + result.getContents());
+                            break;
+                        case "COUPON":
+                            redirectQR = "";
+                            mWebView.loadUrl(DOMAIN_NAME + COUPON_DETAIL_PATH + "?qrVal=" + result.getContents());
+                            break;
+                        case "SAVING":
+                            redirectQR = "";
+                            mWebView.loadUrl(DOMAIN_NAME + HOME_PATH + "?qrVal=" + result.getContents());
+                            break;
+                        default:
+                            redirectQR = "";
+                            mWebView.loadUrl(DOMAIN_NAME + HOME_PATH);
+                            break;
+                    }
+
+                }
+                else {
+                    if (redirectQR == null) return;
+                    switch (redirectQR) {
+                        case "GIFT":
+                            redirectQR = "";
+                            mWebView.loadUrl(DOMAIN_NAME + RECEIVED_GIFT_DETIL_PATH);
+                            break;
+                        case "COUPON":
+                            redirectQR = "";
+                            mWebView.loadUrl(DOMAIN_NAME + COUPON_DETAIL_PATH);
+                            break;
+                        case "SAVING":
+                            redirectQR = "";
+                            mWebView.loadUrl(DOMAIN_NAME + HOME_PATH );
+                            break;
+                        default:
+                            redirectQR = "";
+                            mWebView.loadUrl(DOMAIN_NAME + HOME_PATH);
+                            break;
+                    }
+                }
                 break;
         }
+    }
 
-        // QR코드/ 바코드를 스캔한 결과
-        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if (resultCode == -1) {
-            // result.getFormatName() : 바코드 종류
-            // result.getContents() : 바코드 값
-            Log.d(TAG, resultCode + "QR 코드 스캔 값: " + result.getContents());
-
-            switch (redirectQR) {
-                case "GIFT":
-                    redirectQR = "";
-                    mWebView.loadUrl(DOMAIN_NAME + COUPON_DETAIL_PATH + "?qrVal=" + result.getContents());
-                    break;
-                case "COUPON":
-                    redirectQR = "";
-                    mWebView.loadUrl(DOMAIN_NAME + RECEIVED_GIFT_DETIL_PATH + "?qrVal=" + result.getContents());
-                    break;
-                case "SAVING":
-                    redirectQR = "";
-                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH + "?qrVal=" + result.getContents());
-                    break;
-                default:
-                    redirectQR = "";
-                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH);
-                    break;
+    private Uri getResultUri(Intent data) {
+        Uri result = null;
+        if(data == null || TextUtils.isEmpty(data.getDataString())) {
+            // If there is not data, then we may have taken a photo
+            if(mCameraPhotoPath != null) {
+                result = Uri.parse(mCameraPhotoPath);
             }
-
-        }
-        else {
-            switch (redirectQR) {
-                case "GIFT":
-                    redirectQR = "";
-                    mWebView.loadUrl(DOMAIN_NAME + COUPON_DETAIL_PATH);
-                    break;
-                case "COUPON":
-                    redirectQR = "";
-                    mWebView.loadUrl(DOMAIN_NAME + RECEIVED_GIFT_DETIL_PATH);
-                    break;
-                case "SAVING":
-                    redirectQR = "";
-                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH );
-                    break;
-                default:
-                    redirectQR = "";
-                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH);
-                    break;
+        } else {
+            String filePath = "";
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                filePath = data.getDataString();
+            } else {
+                filePath = "file:" + RealPathUtil.getRealPath(this, data.getData());
             }
+            result = Uri.parse(filePath);
         }
+
+        return result;
     }
 }

@@ -9,7 +9,7 @@
         android:paddingLeft="@dimen/activity_margin_45"
         android:paddingBottom="@dimen/activity_margin_24"
         android:theme="@style/ThemeOverlay.AppCompat.Light"
-        android:background="@color/colorVividCyan"
+        android:background="@color/colorMiddleGray"
         android:orientation="vertical"
         android:gravity="bottom">
 

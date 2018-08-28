@@ -58,4 +58,6 @@ dependencies {
 
     compile 'com.journeyapps:zxing-android-embedded:3.2.0@aar'
     compile 'com.google.zxing:core:3.3.3'
+
+    compile group: 'gun0912.ted', name: 'tedbottompicker', version: '1.1.0'
 }

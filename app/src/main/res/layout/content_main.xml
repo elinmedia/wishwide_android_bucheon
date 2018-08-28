@@ -7,13 +7,13 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <ProgressBar
-            android:id="@+id/pb_web_loading"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_alignParentTop="true"/>
+    <!--<ProgressBar-->
+            <!--android:id="@+id/pb_web_loading"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:visibility="gone"-->
+            <!--style="?android:attr/progressBarStyleHorizontal"-->
+            <!--android:layout_alignParentTop="true"/>-->
 
     <!--<android.support.v4.widget.SwipeRefreshLayout-->
             <!--android:layout_width="match_parent"-->
@@ -24,8 +24,8 @@
                 android:id="@+id/web_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_below="@+id/pb_web_loading"/>
-
+                />
+<!--android:layout_below="@+id/pb_web_loading"-->
 
     <!--</android.support.v4.widget.SwipeRefreshLayout>-->
 

@@ -37,14 +37,14 @@ public class LoadingActivity extends AppCompatActivity implements SharedPreferen
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
-                String wideCustomerPhone = mSharedPreferences.getString(CUSTOMER_PHONE_KEY, "");
+                String customerPhone = mSharedPreferences.getString(CUSTOMER_PHONE_KEY, "");
 
                 //preferences shared 사용해 로그인 이력 있는지 확인
                 Intent intent = new Intent(LoadingActivity.this, MainActivity.class);
-                Log.d(TAG, "전화번호 확인: " + wideCustomerPhone);
-                if (!(wideCustomerPhone.equals(""))) {
+                Log.d(TAG, "전화번호 확인: " + customerPhone);
+                if (!(customerPhone.equals(""))) {
                     intent.putExtra("responseCode", "AUTO");
-                    intent.putExtra("wideCustomerPhone", wideCustomerPhone);
+                    intent.putExtra("customerPhone", customerPhone);
                 }
                 else {
                     intent.putExtra("responseCode", "LOGIN");

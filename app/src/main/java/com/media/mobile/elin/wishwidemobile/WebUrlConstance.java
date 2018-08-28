@@ -9,6 +9,7 @@ public interface WebUrlConstance {
     //String AUTO_LOGIN_PATH = "mobile/user/loginAuto";
     String JOIN_PATH = "user";
     String HOME_PATH = "home";
+    String AUTO_LOGIN_PATH = "login/auto";
 
     String STAMP_AND_POINT_LIST_DETAIL_PATH = "benefit/detailStampAndPoint";
     String STAMP_AND_POINT_LIST_HISTORY_PATH = "benefit/historyStampAndPoint";
