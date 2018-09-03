@@ -2,8 +2,8 @@ package com.media.mobile.elin.wishwidemobile;
 
 public interface WebUrlConstance {
     //Webserver Domin Name
-    String DOMAIN_NAME = "http://45.119.147.60:3000/";    //실서버
-//    String DOMAIN_NAME = "http://localhost:32888/";  //테스트 서버1
+//    String DOMAIN_NAME = "http://45.119.147.60:3000/";    //실서버
+    String DOMAIN_NAME = "http://45.119.147.60:32888/";  //테스트 서버1
 //    String DOMAIN_NAME = "http://192.168.1.102:8080/";  //테스트 서버2
 
     //String AUTO_LOGIN_PATH = "mobile/user/loginAuto";

@@ -6,7 +6,6 @@ import android.content.*;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.*;
 import android.provider.ContactsContract;
@@ -16,21 +15,24 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.*;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.View;
 import android.webkit.*;
-import android.widget.*;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.media.mobile.elin.wishwidemobile.Model.CustomerVO;
@@ -52,7 +54,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 
@@ -64,8 +65,6 @@ public class MainActivity extends AppCompatActivity
         Button.OnClickListener {
 
     private static final String TAG = "MainActivity";
-
-    private final Context mContext = this;
 
     private SharedPreferences mSharedPreferences;
     private CustomerVO customerVO;
@@ -84,11 +83,8 @@ public class MainActivity extends AppCompatActivity
 
     //WebView 관련 멤버변수
     private WebView mWebView;
-//    private ProgressBar mProgressBar;
-//    private SwipeRefreshLayout mSwipeRefresh;
     private WebAndAppBridge mWebAndAppBridge;
 
-    private AppCompatDialog progressDialog;
     private AlertDialog mDialog;
 
     private String redirectQR;
@@ -99,6 +95,7 @@ public class MainActivity extends AppCompatActivity
     private ValueCallback<Uri> mUploadMessage;
     private ValueCallback<Uri[]> mFilePathCallback;
     private String mCameraPhotoPath;
+    private Uri mCameraPhotoPathUri;
 
 
     @Override
@@ -137,12 +134,12 @@ public class MainActivity extends AppCompatActivity
                 builder.setOnKeyListener(new DialogInterface.OnKeyListener() {
                     @Override
                     public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                    if (keyCode == KeyEvent.KEYCODE_BACK) {
-                        mDialog.dismiss();
+                        if (keyCode == KeyEvent.KEYCODE_BACK) {
+                            mDialog.dismiss();
 
-                        return true;
-                    }
-                    return false;
+                            return true;
+                        }
+                        return false;
                     }
                 });
 
@@ -153,13 +150,13 @@ public class MainActivity extends AppCompatActivity
                 mBtnCase1.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                    mDialog.dismiss();
+                        mDialog.dismiss();
 
-                    IntentIntegrator intentIntegrator = new IntentIntegrator(MainActivity.this);
-                    intentIntegrator.setCaptureActivity(QRCodeScannerActivity.class);
-                    intentIntegrator.setOrientationLocked(false);
-                    intentIntegrator.initiateScan();
-                    redirectQR = "SAVING";
+                        IntentIntegrator intentIntegrator = new IntentIntegrator(MainActivity.this);
+                        intentIntegrator.setCaptureActivity(QRCodeScannerActivity.class);
+                        intentIntegrator.setOrientationLocked(false);
+                        intentIntegrator.initiateScan();
+                        redirectQR = "SAVING";
                     }
                 });
 
@@ -182,16 +179,6 @@ public class MainActivity extends AppCompatActivity
 
 
         mWebView.setWebChromeClient(new WebChromeClient() {
-//            @Override
-//            public void onProgressChanged(WebView view, int newProgress) {
-//                if (newProgress == 100) {
-//                    mProgressBar.setVisibility(View.GONE);
-//                } else {
-//                    mProgressBar.setVisibility(View.VISIBLE);
-//                    mProgressBar.setProgress(newProgress);
-//                }
-//            }
-
             @Override
             public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
                 View dialogView = LayoutInflater.from(view.getContext())
@@ -208,13 +195,13 @@ public class MainActivity extends AppCompatActivity
                 builder.setOnKeyListener(new DialogInterface.OnKeyListener() {
                     @Override
                     public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                    if (keyCode == KeyEvent.KEYCODE_BACK) {
-                        result.confirm();
-                        mDialog.dismiss();
+                        if (keyCode == KeyEvent.KEYCODE_BACK) {
+                            result.confirm();
+                            mDialog.dismiss();
 
-                        return true;
-                    }
-                    return false;
+                            return true;
+                        }
+                        return false;
                     }
                 });
 
@@ -224,10 +211,10 @@ public class MainActivity extends AppCompatActivity
                 mBtnOK.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                    if (mDialog.isShowing()) {
-                        result.confirm();
-                        mDialog.dismiss();
-                    }
+                        if (mDialog.isShowing()) {
+                            result.confirm();
+                            mDialog.dismiss();
+                        }
                     }
                 });
 
@@ -267,13 +254,13 @@ public class MainActivity extends AppCompatActivity
                 builder.setOnKeyListener(new DialogInterface.OnKeyListener() {
                     @Override
                     public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                    if (keyCode == KeyEvent.KEYCODE_BACK) {
-                        result.cancel();
-                        mDialog.dismiss();
+                        if (keyCode == KeyEvent.KEYCODE_BACK) {
+                            result.cancel();
+                            mDialog.dismiss();
 
-                        return true;
-                    }
-                    return false;
+                            return true;
+                        }
+                        return false;
                     }
                 });
 
@@ -293,8 +280,8 @@ public class MainActivity extends AppCompatActivity
                 mBtnCase2.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                    result.cancel();
-                    mDialog.dismiss();
+                        result.cancel();
+                        mDialog.dismiss();
                     }
                 });
 
@@ -303,16 +290,6 @@ public class MainActivity extends AppCompatActivity
                         .setView(dialogView)
                         .create();
                 mDialog.show();
-
-//                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        if (mDialog.isShowing()) {
-//                            result.cancel();
-//                            mDialog.dismiss();
-//                        }
-//                    }
-//                }, 4500);
 
                 return true;
             }
@@ -340,22 +317,50 @@ public class MainActivity extends AppCompatActivity
 
             // For 4.1 <= Android Version < 5.0
             public void openFileChooser(ValueCallback<Uri> uploadFile, String acceptType, String capture) {
-                Log.d(getClass().getName(), "openFileChooser : "+acceptType+"/"+capture);
+                Log.d(getClass().getName(), "openFileChooser : " + acceptType + "/" + capture);
                 mUploadMessage = uploadFile;
                 imageChooser();
             }
 
-            // For Android Version 5.0+
-            // Ref: https://github.com/GoogleChrome/chromium-webview-samples/blob/master/input-file-example/app/src/main/java/inputfilesample/android/chrome/google/com/inputfilesample/MainFragment.java
-            public boolean onShowFileChooser(WebView webView,
-                                             ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
-                Log.d(TAG, "WebViewActivity A>5, OS Version : " + Build.VERSION.SDK_INT + "\t onSFC(WV,VCUB,FCP), n=3");
+            // For Android 5.0+
+            public boolean onShowFileChooser(
+                    WebView webView,
+                    ValueCallback<Uri[]> filePathCallback,
+                    WebChromeClient.FileChooserParams fileChooserParams) {
                 if (mFilePathCallback != null) {
-                    mFilePathCallback.onReceiveValue(null);
+//                    filePathCallbackLollipop.onReceiveValue(null);
+                    mFilePathCallback = null;
                 }
                 mFilePathCallback = filePathCallback;
-                imageChooser();
+
+
+                // Create AndroidExampleFolder at sdcard
+                File imageStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "AndroidExampleFolder");
+                if (!imageStorageDir.exists()) {
+                    // Create AndroidExampleFolder at sdcard
+                    imageStorageDir.mkdirs();
+                }
+
+                // Create camera captured image file path and name
+                File file = new File(imageStorageDir + File.separator + "IMG_" + String.valueOf(System.currentTimeMillis()) + ".jpg");
+                mCameraPhotoPathUri = Uri.fromFile(file);
+
+                Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mCameraPhotoPathUri);
+
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("image/*");
+
+                // Create file chooser intent
+                Intent chooserIntent = Intent.createChooser(i, "Image Chooser");
+                // Set camera intent to file chooser
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Parcelable[]{captureIntent});
+
+                // On select image call onActivityResult method of activity
+                startActivityForResult(chooserIntent, INPUT_FILE_REQUEST_CODE);
                 return true;
+
             }
 
             private void imageChooser() {
@@ -373,9 +378,9 @@ public class MainActivity extends AppCompatActivity
 
                     // Continue only if the File was successfully created
                     if (photoFile != null) {
-                        mCameraPhotoPath = "file:"+photoFile.getAbsolutePath();
+                        mCameraPhotoPath = "file:" + photoFile.getAbsolutePath();
                         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                            Uri.fromFile(photoFile));
+                                Uri.fromFile(photoFile));
                     } else {
                         takePictureIntent = null;
                     }
@@ -386,7 +391,7 @@ public class MainActivity extends AppCompatActivity
                 contentSelectionIntent.setType(TYPE_IMAGE);
 
                 Intent[] intentArray;
-                if(takePictureIntent != null) {
+                if (takePictureIntent != null) {
                     intentArray = new Intent[]{takePictureIntent};
                 } else {
                     intentArray = new Intent[0];
@@ -403,13 +408,13 @@ public class MainActivity extends AppCompatActivity
             private File createImageFile() throws IOException {
                 // Create an image file name
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                String imageFileName = "JPEG_" + timeStamp + "_";
+                String imageFileName = timeStamp + "_";
                 File storageDir = Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_PICTURES);
+                        Environment.DIRECTORY_PICTURES);
                 File imageFile = File.createTempFile(
-                    imageFileName,  /* prefix */
-                    ".jpg",         /* suffix */
-                    storageDir      /* directory */
+                        imageFileName,  /* prefix */
+                        ".jpg",         /* suffix */
+                        storageDir      /* directory */
                 );
                 return imageFile;
             }
@@ -432,7 +437,7 @@ public class MainActivity extends AppCompatActivity
                     } catch (URISyntaxException ex) {
                         return false;
                     } catch (ActivityNotFoundException e) {
-                        if ( intent == null )	return false;
+                        if (intent == null) return false;
 
                         //설치되지 않은 앱에 대해 market이동 처리
 //                        if ( handleNotFoundPaymentScheme(intent.getScheme()) )	return true;
@@ -463,12 +468,10 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "onPageFinished()..." + url);
                 super.onPageFinished(view, url);
 
-//                mSwipeRefresh.setRefreshing(false);
-//                mSwipeRefresh.setEnabled(true);
-
                 mLlTabs.setVisibility(View.VISIBLE);
                 mToolbar.setVisibility(View.VISIBLE);
                 mActionBarDrawerToggle.setDrawerIndicatorEnabled(true);
+                mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
 
                 mImgTopLogo.setVisibility(View.GONE);
                 mTvTopTilte.setVisibility(View.GONE);
@@ -478,8 +481,7 @@ public class MainActivity extends AppCompatActivity
                 if (url.contains(DOMAIN_NAME + "gift/")) {   //선물가게
                     mTvTopTilte.setVisibility(View.VISIBLE);
                     mTvTopTilte.setText("선물가게");
-                }
-                else if (url.contains(DOMAIN_NAME + HOME_PATH)) { //홈
+                } else if (url.contains(DOMAIN_NAME + HOME_PATH)) { //홈
                     mImgTopLogo.setVisibility(View.VISIBLE);
                     mFloatingActionButton.setVisibility(View.VISIBLE);
 
@@ -498,15 +500,14 @@ public class MainActivity extends AppCompatActivity
                         Name = "";
                     }
                     Log.d(TAG, "고객명 확인: " + Name);
-                }
-                else if (url.contains(DOMAIN_NAME + STAMP_AND_POINT_LIST_DETAIL_PATH) || url.contains(DOMAIN_NAME + STAMP_AND_POINT_LIST_HISTORY_PATH)) {
+                } else if (url.contains(DOMAIN_NAME + STAMP_AND_POINT_LIST_DETAIL_PATH) || url.contains(DOMAIN_NAME + STAMP_AND_POINT_LIST_HISTORY_PATH)) {
                     //도장/포인트 내역
                     mTvTopTilte.setVisibility(View.VISIBLE);
                     mTvTopTilte.setText("도장");
-                }
-                else if (url.equals(DOMAIN_NAME)) {
+                } else if (url.equals(DOMAIN_NAME)) {
                     mToolbar.setVisibility(View.GONE);
                     mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);    //menu(navigation) gone
+                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
                     mLlTabs.setVisibility(View.GONE);
 
                     mWebView.clearHistory();
@@ -517,46 +518,30 @@ public class MainActivity extends AppCompatActivity
                         localPhoneNum = localPhoneNum.replace("+82", "0");
                         Log.d(TAG, "현재 디바이스의 전화번호 확인: " + localPhoneNum);
 
-                        mWebView.loadUrl("javascript:callGetDevicePhone("  + localPhoneNum + ")");
+                        mWebView.loadUrl("javascript:callGetDevicePhone(" + localPhoneNum + ")");
                     }
-                }
-                else if (url.contains(DOMAIN_NAME + JOIN_PATH)) {
+                } else if (url.contains(DOMAIN_NAME + JOIN_PATH)) {
                     mToolbar.setVisibility(View.GONE);
                     mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);    //menu(navigation) gone
+                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
                     mLlTabs.setVisibility(View.GONE);
-
-//                    mSwipeRefresh.setEnabled(false);
-                }
-                else if (url.contains(DOMAIN_NAME + COUPON_LIST_PATH) || url.contains(DOMAIN_NAME + COUPON_DETAIL_PATH)) {
+                } else if (url.contains(DOMAIN_NAME + COUPON_LIST_PATH) || url.contains(DOMAIN_NAME + COUPON_DETAIL_PATH)) {
                     mTvTopTilte.setVisibility(View.VISIBLE);
                     mTvTopTilte.setText("쿠폰");
-                }
-                else if (url.contains(DOMAIN_NAME + RECEIVED_GIFT_LIST_PATH) || url.contains(DOMAIN_NAME + RECEIVED_GIFT_DETIL_PATH)) {
+                } else if (url.contains(DOMAIN_NAME + RECEIVED_GIFT_LIST_PATH) || url.contains(DOMAIN_NAME + RECEIVED_GIFT_DETIL_PATH)) {
                     mTvTopTilte.setVisibility(View.VISIBLE);
                     mTvTopTilte.setText("받은 선물함");
-                }
-                else if (url.contains(DOMAIN_NAME + SEND_GIFT_LIST_PATH) || url.contains(DOMAIN_NAME + SEND_GIFT_DETIL_PATH)) {
+                } else if (url.contains(DOMAIN_NAME + SEND_GIFT_LIST_PATH) || url.contains(DOMAIN_NAME + SEND_GIFT_DETIL_PATH)) {
                     mTvTopTilte.setVisibility(View.VISIBLE);
                     mTvTopTilte.setText("보낸 선물함");
-                }
-                else {
+                } else {
                     mToolbar.setVisibility(View.GONE);
                     mActionBarDrawerToggle.setDrawerIndicatorEnabled(false);    //menu(navigation) gone
                     mLlTabs.setVisibility(View.GONE);
-
-//                    mSwipeRefresh.setEnabled(false);
                 }
             }
 
         });
-
-
-//        mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-//            @Override
-//            public void onRefresh() {
-//                mWebView.reload();
-//            }
-//        });
 
 
         String responseCode = getIntent().getStringExtra("responseCode");
@@ -596,6 +581,8 @@ public class MainActivity extends AppCompatActivity
                     mLlTabs.setVisibility(View.GONE);
                 }
             }
+
+
         };
 
         mFloatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
@@ -625,11 +612,7 @@ public class MainActivity extends AppCompatActivity
         mNavigationView = (NavigationView) findViewById(R.id.nav_view);
         mNavigationView.setNavigationItemSelectedListener(this);
 
-//        mProgressBar = (ProgressBar) findViewById(R.id.pb_web_loading);
-//        mProgressBar.setMax(100);
-
         mWebView = (WebView) findViewById(R.id.web_view);
-//        mSwipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.getSettings().setDomStorageEnabled(true);
         mWebView.getSettings().setUseWideViewPort(true);
@@ -655,7 +638,7 @@ public class MainActivity extends AppCompatActivity
             case R.id.btn_1:
 //                if (isLocationUpdateNextTime) {
 //                    //위치 서비스 켜기 "다음에" 누르면 매장 전체 검색
-                    mWebView.loadUrl(DOMAIN_NAME + HOME_PATH);
+                mWebView.loadUrl(DOMAIN_NAME + HOME_PATH);
 //                } else {
 //                    requestLocationUpdate();
 //                }
@@ -676,8 +659,6 @@ public class MainActivity extends AppCompatActivity
         }
 //        progressON(this, "로딩 중...");
     }
-
-
 
 
     //Web의 javascript와 앱을 연결해주는 클래스
@@ -741,7 +722,6 @@ public class MainActivity extends AppCompatActivity
                                     getAndroidContactList(PERMISSION_GRANTED_EVENT);
                                 }
                             });
-
                         }
 
                         objRoot.put("responseCode", "HOLD");
@@ -753,13 +733,15 @@ public class MainActivity extends AppCompatActivity
 
                         Log.d(TAG, "연락처 확인: " + objRoot.toString());
 
-                        mWebView.postUrl(DOMAIN_NAME + CONTACT_LIST_PATH, EncodingUtils.getBytes(objRoot.toString(), "UTF-8"));
+//                        mWebView.postUrl(DOMAIN_NAME + CONTACT_LIST_PATH, EncodingUtils.getBytes(objRoot.toString(), "UTF-8"));
+                        mWebView.loadUrl("javascript:callResponseContactList(" + objRoot + ")");
                         break;
                     case PERMISSION_DENIED_EVENT:
                         objRoot.put("responseCode", "DENIED");
 //                        objRoot.put("giftProductNo", mGiftProductNo);
 
-                        mWebView.postUrl(DOMAIN_NAME + CONTACT_LIST_PATH, EncodingUtils.getBytes(objRoot.toString(), "UTF-8"));
+//                        mWebView.postUrl(DOMAIN_NAME + CONTACT_LIST_PATH, EncodingUtils.getBytes(objRoot.toString(), "UTF-8"));
+                        mWebView.loadUrl("javascript:callResponseContactList(" + objRoot + ")");
                         break;
                 }
             } catch (JSONException e) {
@@ -815,7 +797,7 @@ public class MainActivity extends AppCompatActivity
                     if ((phoneNumber != null) && Pattern.matches("^(010)-(\\d{3,4})-(\\d{4})", phoneNumber)) {
                         objContact.put("contactId", idContact);
                         objContact.put("contactName", name);
-                        objContact.put("contactPhone", phoneNumber);
+                        objContact.put("contactPhone", phoneNumber.replace("-", ""));
 
                         arrContacts.put(objContact);
                     }
@@ -842,7 +824,7 @@ public class MainActivity extends AppCompatActivity
                 localPhoneNum = localPhoneNum.replace("+82", "0");
                 Log.d(TAG, "현재 디바이스의 전화번호 확인: " + localPhoneNum);
 
-                mWebView.loadUrl("javascript:alert(" + localPhoneNum + ")");
+//                mWebView.loadUrl("javascript:alert(" + localPhoneNum + ")");
             }
         }
 
@@ -858,7 +840,7 @@ public class MainActivity extends AppCompatActivity
             Log.d(TAG, "callCustomerInfoStorage...");
 
             if (customerVO == null) {
-               customerVO = new CustomerVO();
+                customerVO = new CustomerVO();
             }
 
             customerVO.setNo(no);
@@ -890,7 +872,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (mDialog !=null && mDialog.isShowing()) {
+        if (mDialog != null && mDialog.isShowing()) {
             Log.d(TAG, "enter mDialog!!");
             mDialog.dismiss();
         }
@@ -913,8 +895,7 @@ public class MainActivity extends AppCompatActivity
 //            }
 
             return true;
-        }
-        else {
+        } else {
             View dialogView = LayoutInflater.from(MainActivity.this)
                     .inflate(R.layout.dialog_confirm, null);
 
@@ -1101,13 +1082,9 @@ public class MainActivity extends AppCompatActivity
             case INPUT_FILE_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        if (mFilePathCallback == null) {
-                            super.onActivityResult(requestCode, resultCode, data);
-                            return;
-                        }
-                        Uri[] results = new Uri[]{getResultUri(data)};
-
-                        mFilePathCallback.onReceiveValue(results);
+                        Uri[] result = new Uri[0];
+                        result = (data == null) ? new Uri[]{mCameraPhotoPathUri} : WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+                        mFilePathCallback.onReceiveValue(result);
                         mFilePathCallback = null;
                     } else {
                         if (mUploadMessage == null) {
@@ -1116,12 +1093,11 @@ public class MainActivity extends AppCompatActivity
                         }
                         Uri result = getResultUri(data);
 
-                        Log.d(getClass().getName(), "openFileChooser : "+result);
+                        Log.d(getClass().getName(), "openFileChooser : " + result);
                         mUploadMessage.onReceiveValue(result);
                         mUploadMessage = null;
                     }
-                }
-                else {
+                } else {
                     if (mFilePathCallback != null) mFilePathCallback.onReceiveValue(null);
                     if (mUploadMessage != null) mUploadMessage.onReceiveValue(null);
                     mFilePathCallback = null;
@@ -1155,9 +1131,7 @@ public class MainActivity extends AppCompatActivity
                             mWebView.loadUrl(DOMAIN_NAME + HOME_PATH);
                             break;
                     }
-
-                }
-                else {
+                } else {
                     if (redirectQR == null) return;
                     switch (redirectQR) {
                         case "GIFT":
@@ -1170,7 +1144,7 @@ public class MainActivity extends AppCompatActivity
                             break;
                         case "SAVING":
                             redirectQR = "";
-                            mWebView.loadUrl(DOMAIN_NAME + HOME_PATH );
+                            mWebView.loadUrl(DOMAIN_NAME + HOME_PATH);
                             break;
                         default:
                             redirectQR = "";
@@ -1184,9 +1158,9 @@ public class MainActivity extends AppCompatActivity
 
     private Uri getResultUri(Intent data) {
         Uri result = null;
-        if(data == null || TextUtils.isEmpty(data.getDataString())) {
+        if (data == null || TextUtils.isEmpty(data.getDataString())) {
             // If there is not data, then we may have taken a photo
-            if(mCameraPhotoPath != null) {
+            if (mCameraPhotoPath != null) {
                 result = Uri.parse(mCameraPhotoPath);
             }
         } else {
